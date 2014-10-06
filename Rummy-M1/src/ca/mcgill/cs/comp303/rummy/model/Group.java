@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import ca.mcgill.cs.comp303.rummy.model.Card.*;
+import ca.mcgill.cs.comp303.rummy.model.Card.Rank;
 
 /**
  * Models a group of cards, implementing ICardSet.
@@ -20,7 +20,8 @@ public class Group implements ICardSet
      */
     public Group(Set<Card> pCard)
     {
-        if (pCard != null) {
+        if (pCard != null) 
+        {
             Iterator<Card> cardIterator = pCard.iterator();
             Card currentCard = cardIterator.next();
             Rank rankOfFirstCard = currentCard.getRank();

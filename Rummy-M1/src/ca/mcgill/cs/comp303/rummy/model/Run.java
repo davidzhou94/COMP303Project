@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import ca.mcgill.cs.comp303.rummy.model.Card.*;
-
 /**
  * Models a group of cards, implementing ICardSet.
  *
@@ -20,7 +18,8 @@ public class Run implements ICardSet
      */
     public Run(Set<Card> pCard)
     {
-        if (pCard != null) {
+        if (pCard != null) 
+        {
             // determine the lowest ranked card
             Card lowestCard = pCard.iterator().next();
             for (Iterator<Card> i = pCard.iterator(); i.hasNext(); )
@@ -41,14 +40,15 @@ public class Run implements ICardSet
                     Card currentCard = j.next();
                     if (currentCard.getRank().getValue() == lowestCard.getRank().getValue() + i)
                     {
-                        if (currentCard.getSuit().equals(lowestCard.getSuit())) {
+                        if (currentCard.getSuit().equals(lowestCard.getSuit())) 
+                        {
                             nextRankUpExists = true;
                             aCards.add(currentCard);
                         }
                         break;
                     }
                 }
-                if (! nextRankUpExists)
+                if (!nextRankUpExists)
                 {
                     throw new HandException("The given set of cards is not a Run");
                 }

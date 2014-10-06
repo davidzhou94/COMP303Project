@@ -27,14 +27,19 @@ public final class Card implements Comparable<Card>
         QUEEN(12), 
         KING(13);
         
-        private int val;
-        Rank (int pVal)
+        private int aVal;
+        Rank(int pVal)
         {
-            this.val = pVal;
+            this.aVal = pVal;
         }
+        /**
+         * Gives the numerical value for this Rank in the ordering
+         * of the Rank enum.
+         * @return numerical value for the Rank
+         */
         public int getValue() 
         {
-            return val;
+            return aVal;
         }
     }
 
@@ -48,14 +53,19 @@ public final class Card implements Comparable<Card>
         DIAMONDS(3), 
         CLUBS(4);
         
-        private int val;
-        Suit (int pVal)
+        private int aVal;
+        Suit(int pVal)
         {
-            this.val = pVal;
+            this.aVal = pVal;
         }
+        /**
+         * Gives the numerical value for this Suit in the ordering
+         * of the Suit enum.
+         * @return numerical value for the Suit
+         */
         public int getValue()
         {
-            return val;
+            return aVal;
         }
     }
 
