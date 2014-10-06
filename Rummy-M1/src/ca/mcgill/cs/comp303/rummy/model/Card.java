@@ -13,7 +13,29 @@ public final class Card implements Comparable<Card>
      */
     public enum Rank
     {
-        ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING
+        ACE(1), 
+        TWO(2), 
+        THREE(3), 
+        FOUR(4), 
+        FIVE(5), 
+        SIX(6), 
+        SEVEN(7), 
+        EIGHT(8), 
+        NINE(9), 
+        TEN(10), 
+        JACK(11), 
+        QUEEN(12), 
+        KING(13);
+        
+        private int val;
+        Rank (int pVal)
+        {
+            this.val = pVal;
+        }
+        public int getValue() 
+        {
+            return val;
+        }
     }
 
     /**
@@ -21,7 +43,20 @@ public final class Card implements Comparable<Card>
      */
     public enum Suit
     {
-        SPADES, HEARTS, DIAMONDS, CLUBS
+        SPADES(1), 
+        HEARTS(2), 
+        DIAMONDS(3), 
+        CLUBS(4);
+        
+        private int val;
+        Suit (int pVal)
+        {
+            this.val = pVal;
+        }
+        public int getValue()
+        {
+            return val;
+        }
     }
 
     private final Rank aRank;
@@ -81,9 +116,9 @@ public final class Card implements Comparable<Card>
      */
     public int compareTo(final Card pCard)
     {
-        int thisCardOrdinal = this.getRank().ordinal() * SUIT_SIZE + this.getSuit().ordinal();
-        int pCardOrdinal = pCard.getRank().ordinal() * SUIT_SIZE + pCard.getSuit().ordinal();
-        return thisCardOrdinal - pCardOrdinal;
+        int thisCardValue = this.getRank().getValue() * SUIT_SIZE + this.getSuit().getValue();
+        int pCardValue = pCard.getRank().getValue() * SUIT_SIZE + pCard.getSuit().getValue();
+        return thisCardValue - pCardValue;
     }
 
     /**
@@ -117,6 +152,6 @@ public final class Card implements Comparable<Card>
     @Override
     public int hashCode()
     {
-        return (this.getSuit().ordinal()) * RANK_SIZE + (this.getRank().ordinal() + 1);
+        return (this.getSuit().getValue()) * RANK_SIZE + (this.getRank().getValue());
     }
 }

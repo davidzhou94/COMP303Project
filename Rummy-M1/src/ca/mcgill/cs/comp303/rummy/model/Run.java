@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import ca.mcgill.cs.comp303.rummy.model.Card.*;
+
 /**
  * Models a group of cards, implementing ICardSet.
  *
@@ -18,7 +20,44 @@ public class Run implements ICardSet
      */
     public Run(Set<Card> pCard)
     {
-        
+        if (pCard != null) {
+            // determine the lowest ranked card
+            Card lowestCard = pCard.iterator().next();
+            for (Iterator<Card> i = pCard.iterator(); i.hasNext(); )
+            {
+                Card currentCard = i.next();
+                if (currentCard.compareTo(lowestCard) < 0)
+                {
+                    lowestCard = currentCard;
+                }
+            }
+            
+            aCards.add(lowestCard);
+            for (int i = 1; i <= pCard.size() - 1; i++)
+            {
+                boolean nextRankUpExists = false;
+                for (Iterator<Card> j = pCard.iterator(); j.hasNext(); )
+                {
+                    Card currentCard = j.next();
+                    if (currentCard.getRank().getValue() == lowestCard.getRank().getValue() + i)
+                    {
+                        if (currentCard.getSuit().equals(lowestCard.getSuit())) {
+                            nextRankUpExists = true;
+                            aCards.add(currentCard);
+                        }
+                        break;
+                    }
+                }
+                if (! nextRankUpExists)
+                {
+                    throw new HandException("The given set of cards is not a Run");
+                }
+            }
+        }
+        else
+        {
+            throw new HandException("The given set of cards was null");
+        }
     }
     
     @Override
@@ -42,15 +81,13 @@ public class Run implements ICardSet
     @Override
     public boolean isGroup()
     {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public boolean isRun()
     {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
 }

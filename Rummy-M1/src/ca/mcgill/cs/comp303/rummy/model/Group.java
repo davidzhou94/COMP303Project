@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import ca.mcgill.cs.comp303.rummy.model.Card.*;
+
 /**
  * Models a group of cards, implementing ICardSet.
  *
@@ -18,7 +20,28 @@ public class Group implements ICardSet
      */
     public Group(Set<Card> pCard)
     {
-        
+        if (pCard != null) {
+            Iterator<Card> cardIterator = pCard.iterator();
+            Card currentCard = cardIterator.next();
+            Rank rankOfFirstCard = currentCard.getRank();
+            aCards.add(currentCard);
+            for (Iterator<Card> i = cardIterator; i.hasNext(); )
+            {
+                currentCard = i.next();
+                if ( rankOfFirstCard.equals(currentCard.getRank()) )
+                {
+                    aCards.add(currentCard);
+                }
+                else
+                {
+                    throw new HandException("The given set of cards is not a Group");
+                }
+            }
+        }
+        else
+        {
+            throw new HandException("The given set of cards was null");
+        }
     }
     
     @Override
@@ -42,14 +65,12 @@ public class Group implements ICardSet
     @Override
     public boolean isGroup()
     {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override
     public boolean isRun()
     {
-        // TODO Auto-generated method stub
         return false;
     }
 
