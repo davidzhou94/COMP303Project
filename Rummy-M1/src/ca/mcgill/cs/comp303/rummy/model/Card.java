@@ -164,4 +164,10 @@ public final class Card implements Comparable<Card>
     {
         return (this.getSuit().getValue()) * RANK_SIZE + (this.getRank().getValue());
     }
+
+    public int getScore()
+    {
+        if (aRank.getValue() > 10) return 10;
+        else return aRank.getValue();
+    }
 }
