@@ -1,5 +1,7 @@
 package ca.mcgill.cs.comp303.rummy.model;
 
+import java.util.ArrayList;
+
 /**
  * Implementors of this class should be immutable.
  */
@@ -25,4 +27,9 @@ public interface ICardSet extends Iterable<Card>
 	 * @return true if the object represents a run.
 	 */
 	boolean isRun();
+	
+    /**
+     * @return A copy of the cards in the CardSet.
+     */
+	ArrayList<Card> getCards();
 }

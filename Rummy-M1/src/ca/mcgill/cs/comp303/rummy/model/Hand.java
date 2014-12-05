@@ -1,26 +1,28 @@
 package ca.mcgill.cs.comp303.rummy.model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Models a hand of 10 cards. The hand is not sorted. Not threadsafe. The hand is a set: adding the same card twice will not add duplicates of the
  * card.
  * 
- * @inv size() > 0
- * @inv size() <= HAND_SIZE
+ * size() > 0
+ * size() <= HAND_SIZE
  */
 public class Hand
 {
     private static final int HAND_SIZE = 10;
-
-    private static final int AUTOMATCH_MAX_SET_SIZE = 10;
-
-    private static final int AUTOMATCH_MIN_SET_SIZE = 0;
+    private static final int MAX_GROUP_SIZE = 10;
+    private static final int MIN_GROUP_SIZE = 0;
 
     private HashSet<Card> aUnmatchedCards;
     private HashSet<Card> aMatchedCards;
-    private HashSet<Run> aRuns;
-    private HashSet<Group> aGroups;
+    private ArrayList<Run> aRuns;
+    private ArrayList<Group> aGroups;
 
     /**
      * Creates a new, empty hand.
@@ -29,8 +31,8 @@ public class Hand
     {
         aUnmatchedCards = new HashSet<Card>(HAND_SIZE);
         aMatchedCards = new HashSet<Card>(HAND_SIZE);
-        aRuns = new HashSet<Run>();
-        aGroups = new HashSet<Group>();
+        aRuns = new ArrayList<Run>();
+        aGroups = new ArrayList<Group>();
     }
 
     /**
@@ -95,6 +97,7 @@ public class Hand
         aUnmatchedCards.clear();
         aMatchedCards.clear();
         aRuns.clear();
+        aGroups.clear();
     }
 
     /**
@@ -151,7 +154,12 @@ public class Hand
      */
     public int score()
     {
-        return Integer.MAX_VALUE; // TODO
+        int score = 0;
+        for (Card card : aUnmatchedCards)
+        {
+            score += card.getScore();
+        }
+        return score;
     }
 
     /**
@@ -165,7 +173,14 @@ public class Hand
      */
     public void createGroup(Set<Card> pCards)
     {
-        // TODO
+        for (Card card : pCards)
+        {
+            if (!aUnmatchedCards.contains(card)) 
+            {
+                throw new HandException("A card in the group was not an unmatched card in the hand");
+            }
+        }
+        aGroups.add(new Group(pCards));
     }
 
     /**
@@ -179,226 +194,176 @@ public class Hand
      */
     public void createRun(Set<Card> pCards)
     {
-        // TODO
-    }
-
-    private class matchingDescriptor
-    {
-        public int score;
-        public ArrayList<Card> free;
-        public ArrayList<ArrayList<Card>> sets;
-        public ArrayList<ArrayList<Card>> runs;
-
-        public matchingDescriptor(int sc, ArrayList<Card> fr, ArrayList<ArrayList<Card>> se, ArrayList<ArrayList<Card>> ru)
+        for (Card card : pCards)
         {
-            score = sc;
-            free = fr;
-            sets = se;
-            runs = ru;
+            if (!aUnmatchedCards.contains(card))
+            {
+                throw new HandException("A card in the group was not an unmatched card in the hand");
+            }
         }
+        aRuns.add(new Run(pCards));
     }
 
-    private Card.Rank nextRank(Card c)
+    private Card.Rank nextRank(Card pCard)
     {
-        int index = c.getRank().ordinal() + 1;
+        int index = pCard.getRank().ordinal() + 1;
         if (index >= Card.Rank.values().length || index < 0)
         {
             return null;
         }
         else
         {
-            return Card.Rank.values()[c.getRank().ordinal() + 1];
+            return Card.Rank.values()[pCard.getRank().ordinal() + 1];
         }
-    }
-
-    private <E> ArrayList<E> reversedArrayListFromList(List<E> pList)
-    {
-        ArrayList<E> result = new ArrayList<E>();
-        for (int i = pList.size() - 1; i >= 0; --i)
-        {
-            result.add(pList.get(i));
-        }
-        return result;
     }
 
     /**
-     * Calculates the matching of cards into groups and runs that results in the lowest amount of points for unmatched cards.
+     * Calculates the matching of cards into groups and runs that results in the lowest amount of points for all cards in the hand.
      */
     public void autoMatch()
     {
-        ArrayList<Card> unmatchedList = new ArrayList<Card>();
-
-        for (Card c : aUnmatchedCards)
+        ArrayList<Card> allCards = new ArrayList<Card>(aUnmatchedCards);
+        allCards.addAll(aMatchedCards);
+        
+        CardSets bestMatching = autoMatch(new ArrayList<Group>(), new ArrayList<Run>(), allCards, 0);
+        
+        aRuns = new ArrayList<Run>();
+        for (Run run : bestMatching.getMatchedRuns())
         {
-            unmatchedList.add(c);
-        }
-
-        matchingDescriptor bestMatching = autoMatchIter(new ArrayList<ArrayList<Card>>(), new ArrayList<ArrayList<Card>>(), unmatchedList, 0);
-        /*
-         * Implement the match
-         */
-        aRuns = new HashSet<Run>();
-        for (ArrayList<Card> seq : bestMatching.runs)
-        {
-            aRuns.add( new Run(new HashSet<Card>(seq)) );
-            for (Card card : seq)
+            aRuns.add(run);
+            for (Card card : run.getCards())
             {
                 aMatchedCards.add(card);
             }
         }
 
-        aGroups = new HashSet<Group>();
-        for (ArrayList<Card> seq : bestMatching.sets)
+        aGroups = new ArrayList<Group>();
+        for (Group group : bestMatching.getMatchedGroups())
         {
-            aGroups.add( new Group(new HashSet<Card>(seq)) );
-            for (Card card : seq)
+            aGroups.add(group);
+            for (Card card : group.getCards())
             {
                 aMatchedCards.add(card);
             }
         }
 
         aUnmatchedCards = new HashSet<Card>();
-        for (Card c : bestMatching.free)
+        for (Card card : bestMatching.getUnusedCards())
         {
-            aUnmatchedCards.add(c);
+            aUnmatchedCards.add(card);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private matchingDescriptor autoMatchIter(ArrayList<ArrayList<Card>> pSets, ArrayList<ArrayList<Card>> pRuns, ArrayList<Card> pUnmatchedCards,
-            int pScore)
+    private CardSets autoMatch(ArrayList<Group> pGroups, ArrayList<Run> pRuns, ArrayList<Card> pCardsToMatch, int pScore)
     {
-        ArrayList<Card> l;
-        int maxScore;
-        matchingDescriptor maxKey;
-        int streakStart;
-        int streakScore;
-
-        if (pUnmatchedCards.size() == 0)
+        if (pCardsToMatch.size()<=0)
         {
-            return new matchingDescriptor(pScore, pUnmatchedCards, pSets, pRuns);
+            return new CardSets(pScore, pCardsToMatch, pGroups, pRuns);
         }
-
-        maxScore = pScore;
-        maxKey = new matchingDescriptor(pScore, pUnmatchedCards, pSets, pRuns);
-
-        /*
-         * Sequence matching
-         */
-        l = (ArrayList<Card>) (pUnmatchedCards.clone());
         
-        Collections.sort(l, new Comparator<Card>()
+        int bestMatchingScore = pScore;
+        CardSets bestMatchingSet = new CardSets(pScore, pCardsToMatch, pGroups, pRuns);
+        ArrayList<Card> unmatchedCards = (ArrayList<Card>) pCardsToMatch.clone();
+        
+        // Sort unmatched cards
+        Collections.sort(unmatchedCards, new Comparator<Card>()
         {
-            private int sortKey(Card pCard)
-            {
-                return (Card.Rank.values().length * 2) * pCard.getSuit().ordinal() + pCard.getRank().ordinal();
-            }
-
             public int compare(Card pFirstCard, Card pSecondCard)
             {
-                return sortKey(pSecondCard) - sortKey(pFirstCard);
+                return pFirstCard.compareTo(pSecondCard);
             }
         });
-
-        streakStart = 0;
-        streakScore = 0;
-
-        for (int i = 0; i < l.size(); ++i)
+        
+        // Run matching
+        int indexFirstCardInRun = 0;
+        int scoreOfRun = 0;
+        
+        for (int i = 0; i < unmatchedCards.size(); ++i)
         {
-            if (!(i > 0 && l.get(i - 1).getSuit() == l.get(i).getSuit() && nextRank(l.get(i)) == l.get(i - 1).getRank()))
+            // Check whether the run has been broken
+            boolean suitDifferentFromPrevious = !(unmatchedCards.get(i - 1).getSuit() == unmatchedCards.get(i).getSuit());
+            boolean rankNotOneAbovePrevious = !(unmatchedCards.get(i - 1).getRank() == nextRank(unmatchedCards.get(i)));
+            if ( (i<=0) || suitDifferentFromPrevious || rankNotOneAbovePrevious )
             {
-
-                streakStart = i;
-                streakScore = 0;
+                indexFirstCardInRun = i;
+                scoreOfRun = 0;
             }
 
-            streakScore += l.get(i).getScore();
-            int streakLength = i - streakStart + 1;
+            scoreOfRun += unmatchedCards.get(i).getScore();
+            int streakLength = i - indexFirstCardInRun + 1;
 
             if (streakLength >= 3)
             {
-                ArrayList<ArrayList<Card>> newRuns = new ArrayList<ArrayList<Card>>();
-                newRuns.addAll(pRuns);
-                newRuns.add(reversedArrayListFromList(l.subList(streakStart, i + 1)));
+                ArrayList<Run> allRuns = new ArrayList<Run>(pRuns);
+                Run newFoundRun = new Run(new HashSet<Card>( unmatchedCards.subList(indexFirstCardInRun, i + 1) ));
+                allRuns.add(newFoundRun);
 
                 ArrayList<Card> newFree = new ArrayList<Card>();
-                newFree.addAll(l.subList(0, streakStart));
-                newFree.addAll(l.subList(i + 1, l.size()));
-
-                matchingDescriptor trial = autoMatchIter(pSets, newRuns, newFree, pScore + streakScore);
-
-                /*
-                 * >= because a larger sequence with the same score is preferable
-                 */
-                if (trial.score >= maxScore)
+                newFree.addAll(unmatchedCards.subList(0, indexFirstCardInRun));
+                newFree.addAll(unmatchedCards.subList(i + 1, unmatchedCards.size()));
+                
+                CardSets trial = autoMatch(pGroups, allRuns, newFree, pScore + scoreOfRun);
+                
+                if (trial.getScore() >= bestMatchingScore)
                 {
-                    maxScore = trial.score;
-                    maxKey = trial;
+                    bestMatchingScore = trial.getScore();
+                    bestMatchingSet = trial;
                 }
             }
         }
-
-        /*
-         * Set matching
-         */
-        l = (ArrayList<Card>) (pUnmatchedCards.clone());
-        Collections.sort(l, new Comparator<Card>()
+        
+        // Sort unmatched cards
+        unmatchedCards = (ArrayList<Card>) pCardsToMatch.clone();
+        Collections.sort(unmatchedCards, new Comparator<Card>()
         {
-            private int sortKey(Card pCard)
-            {
-                return (Card.Rank.values().length * 2) * pCard.getSuit().ordinal() + pCard.getRank().ordinal();
-            }
-
             public int compare(Card pFirstCard, Card pSecondCard)
             {
-                return sortKey(pSecondCard) - sortKey(pFirstCard);
+                return pFirstCard.compareTo(pSecondCard);
             }
         });
-
-        streakStart = 0;
-        streakScore = 0;
-
-        for (int i = 0; i < l.size(); ++i)
+        
+        // Group matching
+        int indexFirstCardInGroup = 0;
+        int scoreOfGroup = 0;
+        
+        for (int i = 0; i < unmatchedCards.size(); ++i)
         {
-            if (!(i > 0 && l.get(i - 1).getRank() == l.get(i).getRank()))
+            boolean rankDifferentFromPrevious = !(unmatchedCards.get(i - 1).getRank() == unmatchedCards.get(i).getRank());
+            if ( (i<=0) || rankDifferentFromPrevious )
             {
-
-                streakStart = i;
-                streakScore = 0;
+                indexFirstCardInGroup = i;
+                scoreOfGroup = 0;
             }
+            scoreOfGroup += unmatchedCards.get(i).getScore();
+            int streakLength = i - indexFirstCardInGroup + 1;
 
-            streakScore += l.get(i).getScore();
-            int streakLength = i - streakStart + 1;
-
-            if (streakLength > AUTOMATCH_MAX_SET_SIZE)
+            if (streakLength > MAX_GROUP_SIZE)
             {
                 streakLength = 0;
-                streakScore = l.get(i).getScore();
+                scoreOfGroup = unmatchedCards.get(i).getScore();
             }
-
-            if (streakLength >= AUTOMATCH_MIN_SET_SIZE && streakLength <= AUTOMATCH_MAX_SET_SIZE)
+            
+            if (streakLength >= MIN_GROUP_SIZE && streakLength <= MAX_GROUP_SIZE)
             {
-                ArrayList<ArrayList<Card>> newSets = new ArrayList<ArrayList<Card>>();
-                newSets.addAll(pSets);
-                newSets.add(reversedArrayListFromList(l.subList(streakStart, i + 1)));
-
-                ArrayList<Card> newFree = new ArrayList<Card>();
-                newFree.addAll(l.subList(0, streakStart));
-                newFree.addAll(l.subList(i + 1, l.size()));
-
-                matchingDescriptor trial = autoMatchIter(newSets, pRuns, newFree, pScore + streakScore);
-
-                /*
-                 * >= because a larger set with the same score is preferable
-                 */
-                if (trial.score >= maxScore)
+                ArrayList<Group> allGroups = new ArrayList<Group>(pGroups);
+                Group newFoundGroup = new Group(new HashSet<Card>( unmatchedCards.subList(indexFirstCardInGroup, i + 1) ));
+                allGroups.add(newFoundGroup);
+                
+                ArrayList<Card> newFreeCards = new ArrayList<Card>();
+                newFreeCards.addAll(unmatchedCards.subList(0, indexFirstCardInGroup));
+                newFreeCards.addAll(unmatchedCards.subList(i + 1, unmatchedCards.size()));
+                
+                CardSets trial = autoMatch(allGroups, pRuns, newFreeCards, pScore + scoreOfGroup);
+                
+                if (trial.getScore() >= bestMatchingScore)
                 {
-                    maxScore = trial.score;
-                    maxKey = trial;
+                    bestMatchingScore = trial.getScore();
+                    bestMatchingSet = trial;
                 }
             }
         }
-
-        return maxKey;
+        
+        return bestMatchingSet;
     }
 }

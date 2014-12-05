@@ -7,7 +7,8 @@ public final class Card implements Comparable<Card>
 {
     private static final int SUIT_SIZE = 4;
     private static final int RANK_SIZE = 13;
-
+    private static final int MAX_SCORE = 10;
+    
     /**
      * Represents the rank of the card.
      */
@@ -164,10 +165,20 @@ public final class Card implements Comparable<Card>
     {
         return (this.getSuit().getValue()) * RANK_SIZE + (this.getRank().getValue());
     }
-
+    
+    /**
+     * The score of this card (rank number unless it is greater than the max score possible).
+     * @return the score
+     */
     public int getScore()
     {
-        if (aRank.getValue() > 10) return 10;
-        else return aRank.getValue();
+        if (aRank.getValue() > MAX_SCORE) 
+        {
+            return MAX_SCORE;
+        }
+        else
+        {
+            return aRank.getValue();
+        }
     }
 }

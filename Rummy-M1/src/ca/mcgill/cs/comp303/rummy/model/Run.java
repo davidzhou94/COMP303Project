@@ -1,5 +1,6 @@
 package ca.mcgill.cs.comp303.rummy.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -90,4 +91,9 @@ public class Run implements ICardSet
         return true;
     }
 
+    @Override
+    public ArrayList<Card> getCards()
+    {
+        return new ArrayList<Card>(aCards);
+    }
 }
