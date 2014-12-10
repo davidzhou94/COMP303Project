@@ -42,6 +42,18 @@ public final class Card implements Comparable<Card>
         {
             return aVal;
         }
+        
+        public Rank nextRank()
+        {
+            if ( aVal >= 13 )
+            {
+                return null;
+            }
+            else
+            {
+                return Rank.values()[aVal];
+            }
+        }
     }
 
     /**

@@ -133,7 +133,7 @@ public class Hand
      */
     public int size()
     {
-        return aUnmatchedCards.size() + aUnmatchedCards.size();
+        return aUnmatchedCards.size() + aMatchedCards.size();
     }
 
     /**
@@ -204,19 +204,6 @@ public class Hand
         aRuns.add(new Run(pCards));
     }
 
-    private Card.Rank nextRank(Card pCard)
-    {
-        int index = pCard.getRank().ordinal() + 1;
-        if (index >= Card.Rank.values().length || index < 0)
-        {
-            return null;
-        }
-        else
-        {
-            return Card.Rank.values()[pCard.getRank().ordinal() + 1];
-        }
-    }
-
     /**
      * Calculates the matching of cards into groups and runs that results in the lowest amount of points for all cards in the hand.
      */
@@ -283,7 +270,7 @@ public class Hand
         {
             // Check whether the run has been broken
             boolean suitDifferentFromPrevious = !(unmatchedCards.get(i - 1).getSuit() == unmatchedCards.get(i).getSuit());
-            boolean rankNotOneAbovePrevious = !(unmatchedCards.get(i - 1).getRank() == nextRank(unmatchedCards.get(i)));
+            boolean rankNotOneAbovePrevious = !(unmatchedCards.get(i - 1).getRank() == unmatchedCards.get(i).getRank().nextRank());
             if ( (i<=0) || suitDifferentFromPrevious || rankNotOneAbovePrevious )
             {
                 indexFirstCardInRun = i;
