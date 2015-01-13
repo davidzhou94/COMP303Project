@@ -13,7 +13,7 @@ import ca.mcgill.cs.comp303.rummy.model.Card.Rank;
  */
 public class Group implements ICardSet
 {
-    private HashSet<Card> aCards;
+    private HashSet<Card> aCards = new HashSet<Card>();
     
     /** 
      * Constructor that creates a Group.

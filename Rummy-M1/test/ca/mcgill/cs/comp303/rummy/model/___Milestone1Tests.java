@@ -12,5 +12,8 @@ import org.junit.runners.Suite;
         TestHand.class,
         TestAutoMatch.class
         })
-public class Milestone1Tests {}
+public class ___Milestone1Tests {
+    
+    
+}
 

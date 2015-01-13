@@ -77,7 +77,29 @@ public class Hand
         }
         else if (aMatchedCards.contains(pCard))
         {
-            aMatchedCards.remove(pCard);
+            ArrayList<ICardSet> lAllCardSets = new ArrayList<ICardSet>();
+            lAllCardSets.addAll(aGroups);
+            lAllCardSets.addAll(aRuns);
+            for (ICardSet i : lAllCardSets)
+            {
+                if (i.contains(pCard)) 
+                {
+                    for(Card c : i.getCards())
+                    {
+                        aUnmatchedCards.add(c);
+                        aMatchedCards.remove(c);
+                    }
+                    if (aRuns.contains(i))
+                    {
+                        aRuns.remove(i);
+                    }
+                    else
+                    {
+                        aGroups.remove(i);
+                    }
+                }
+            }
+            aUnmatchedCards.remove(pCard);
         }
     }
 
@@ -181,6 +203,11 @@ public class Hand
             }
         }
         aGroups.add(new Group(pCards));
+        for (Card card : pCards)
+        {
+            aUnmatchedCards.remove(card);
+            aMatchedCards.add(card);
+        }
     }
 
     /**
@@ -202,6 +229,11 @@ public class Hand
             }
         }
         aRuns.add(new Run(pCards));
+        for (Card card : pCards)
+        {
+            aUnmatchedCards.remove(card);
+            aMatchedCards.add(card);
+        }
     }
 
     /**

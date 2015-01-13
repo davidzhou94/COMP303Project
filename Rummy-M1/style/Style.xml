@@ -5,7 +5,7 @@
     This configuration file was written by the eclipse-cs plugin configuration editor
 -->
 <!--
-    Checkstyle-Configuration: COMP303
+    Checkstyle-Configuration: COMP303Project
     Description: none
 -->
 <module name="Checker">
@@ -181,5 +181,8 @@
   <module name="SuppressionCommentFilter">
     <property name="offCommentFormat" value="CSOFF:"/>
     <property name="onCommentFormat" value="CSON:"/>
+  </module>
+  <module name="SuppressionFilter">
+    <property name="file" value="C:\Users\David\git\COMP303Project\Rummy-M1\style\Suppressions.xml"/>
   </module>
 </module>

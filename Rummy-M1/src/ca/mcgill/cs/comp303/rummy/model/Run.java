@@ -11,7 +11,7 @@ import java.util.Set;
  */
 public class Run implements ICardSet
 {
-    private HashSet<Card> aCards;
+    private HashSet<Card> aCards = new HashSet<Card>();
     
     /** 
      * Constructor that creates a Group.

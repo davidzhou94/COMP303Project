@@ -43,9 +43,13 @@ public final class Card implements Comparable<Card>
             return aVal;
         }
         
+        /**
+         * Gives the next rank in the ordering of ranks.
+         * @return The next rank after this one. If there is none, null is returned.
+         */
         public Rank nextRank()
         {
-            if ( aVal >= 13 )
+            if ( aVal >= Rank.values().length )
             {
                 return null;
             }
@@ -61,10 +65,10 @@ public final class Card implements Comparable<Card>
      */
     public enum Suit
     {
-        SPADES(1), 
-        HEARTS(2), 
-        DIAMONDS(3), 
-        CLUBS(4);
+        CLUBS(1),
+        DIAMONDS(2), 
+        HEARTS(3), 
+        SPADES(4);
         
         private int aVal;
         Suit(int pVal)
@@ -175,7 +179,7 @@ public final class Card implements Comparable<Card>
     @Override
     public int hashCode()
     {
-        return (this.getSuit().getValue()) * RANK_SIZE + (this.getRank().getValue());
+        return (this.getSuit().getValue() - 1) * RANK_SIZE + this.getRank().getValue();
     }
     
     /**
